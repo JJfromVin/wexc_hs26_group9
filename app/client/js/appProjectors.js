@@ -3,6 +3,7 @@ import {defaultProjectors}  from "../../../framework/client/js/projector/default
 import {dom}                from "../../../framework/client/js/util/dom.js";
 import {ONE_TO_MANY}        from "../../../framework/client/js/types.js";
 import {AVATAR_URL}             from "./Constants.js";
+import {CrystalSiteProjector} from "./crystalSiteProjector.js";
 
 export { appProjectors }
 
@@ -154,5 +155,6 @@ const connectorProjector = (workbenchController) => {
 const appProjectors = {
     ...defaultProjectors, // default - we only want to specialize the connectors
     connectorProjector,
+    siteProjector: CrystalSiteProjector,
 };
 
