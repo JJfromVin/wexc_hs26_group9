@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Inter:wght@400;500;600&display=swap');
+
+/* Farben und Schriften */
+:root {
+    /* Bestehende Variablen der Projektvorlage */
+    --clr-bg-dark: #14112a;
+    --clr-bg-half: #30284e;
+    --clr-fg-light: #f4f1ff;
+    --clr-accent: #b9a6ff;
+    --clr-attention: #ff92b5;
+
+    /* Zusätzliche Farben unseres Designs */
+    --clr-surface: #221d3f;
+    --clr-surface-highlight: #292245;
+    --clr-muted: #9c95c2;
+    --clr-border: #383052;
+    --clr-selected: #f2c14e;
+
+    /* Künstler-Buttons */
+    --clr-item-bg: #8b7fd650;
+    --clr-item-hover: #8b7fd680;
+    --clr-item-glow: #b9a6ff30;
+    --clr-remove-hover: #14112a18;
+
+    /* Transparente Farben der Kristallkugel */
+    --clr-orb-border: #b9a6ff80;
+    --clr-orb-ring: #b9a6ff15;
+    --clr-orb-reflection: #f4f1ff55;
+    --clr-orb-highlight: #f4f1ff17;
+    --clr-orb-bottom: #8b7fd62e;
+    --clr-orb-bg: #8b7fd60c;
+    --clr-orb-inner-glow: #8b7fd618;
+    --clr-orb-shadow: #0a0817a0;
+    --clr-orb-outer-glow: #8b7fd610;
+
+    /* Sockel */
+    --clr-stand-edge: #292243;
+    --clr-stand-center: #504367;
+    --clr-stand-border: #6c5e8a;
+    --clr-stand-foot: #3d3458;
+
+    --font-base: 'Inter', Arial, sans-serif;
+    --font-heading: 'Fraunces', Georgia, serif;
+}
+
+/* Anpassungen an der bestehenden Anwendung */
+body {
+    background: var(--clr-bg-dark);
+    color: var(--clr-fg-light);
+    color-scheme: dark;
+}
+
+h1,
+h2 {
+    font-family: var(--font-heading);
+}
+
+main .boxes details {
+    background: var(--clr-surface);
+}
+
+main .boxes details summary,
+button,
+input[type="submit"] {
+    color: var(--clr-fg-light);
+}
+
+.noSelection,
+summary::marker {
+    color: var(--clr-accent);
+}
+
+section.workbench .dropzone .remove {
+    background: var(--clr-bg-dark);
+}
+
+/* Grundlayout */
+.crystal-selector,
+.crystal-selector * {
+    box-sizing: border-box;
+}
+
+.crystal-selector {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 480px) minmax(0, 380px);
+    justify-content: center;
+    align-items: center;
+    gap: 60px;
+    padding: 48px 24px;
+}
+
+.crystal-selector .orb-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+}
+
+/* Kristallkugel */
+.crystal-selector .orb {
+    position: relative;
+    display: grid;
+    place-items: center;
+
+    width: min(100%, 440px);
+    aspect-ratio: 1;
+    overflow: clip;
+
+    border: 1px solid var(--clr-orb-border);
+    border-radius: 50%;
+
+    background:
+            radial-gradient(
+                    circle at 27% 20%,
+                    var(--clr-orb-highlight),
+                    transparent 28%
+            ),
+            radial-gradient(
+                    ellipse at 50% 85%,
+                    var(--clr-orb-bottom),
+                    transparent 65%
+            ),
+            var(--clr-orb-bg);
+
+    box-shadow:
+            inset 0 0 45px var(--clr-orb-inner-glow),
+            inset -15px -12px 40px var(--clr-orb-shadow),
+            0 0 80px var(--clr-orb-outer-glow);
+}
+
+.crystal-selector .orb::before {
+    content: "";
+    position: absolute;
+    inset: 13px;
+
+    border: 1px solid var(--clr-orb-ring);
+    border-top-color: var(--clr-orb-reflection);
+    border-radius: 50%;
+
+    transform: rotate(-30deg);
+    pointer-events: none;
+}
+
+/* Künstlerliste */
+.crystal-selector .item-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    width: 72%;
+    margin: 0;
+    padding: 6px;
+
+    list-style: none;
+    text-align: center;
+}
+
+.crystal-selector .placeholder {
+    color: var(--clr-muted);
+}
+
+.crystal-selector .placeholder:hover,
+.crystal-selector .data-item:hover {
+    background: transparent;
+}
+
+.crystal-selector .data-item {
+    flex-shrink: 0;
+    width: 100%;
+    padding: 0;
+}
+
+.crystal-selector .data-item button {
+    width: 100%;
+    padding: 10px 16px;
+
+    border: 1px solid transparent;
+    border-radius: 40px;
+
+    background: var(--clr-item-bg);
+    color: var(--clr-fg-light);
+    box-shadow: none;
+
+    font: inherit;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+.crystal-selector .data-item button:hover {
+    background: var(--clr-item-hover);
+}
+
+.crystal-selector .data-item button:focus-visible {
+    outline: 2px solid var(--clr-accent);
+    outline-offset: 2px;
+}
+
+/* Mittlere Position */
+.crystal-selector .data-item.focused button {
+    min-height: 54px;
+    border-color: var(--clr-accent);
+    background: var(--clr-surface);
+    color: var(--clr-fg-light);
+    box-shadow: 0 0 18px var(--clr-item-glow);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Direkte Nachbarn */
+.crystal-selector .data-item.adjacent {
+    width: 84%;
+    opacity: 0.78;
+}
+
+.crystal-selector .data-item.adjacent button {
+    min-height: 40px;
+    padding: 7px 12px;
+    font-size: 15px;
+}
+
+/* Äußere Positionen */
+.crystal-selector .data-item.distant {
+    width: 68%;
+    opacity: 0.42;
+}
+
+.crystal-selector .data-item.distant button {
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+/* Tatsächlich ausgewählte Künstler */
+.crystal-selector .data-item button[aria-pressed="true"] {
+    color: var(--clr-selected);
+}
+
+/* Sockel */
+.crystal-selector .stand {
+    position: relative;
+    width: 165px;
+    height: 40px;
+    margin-top: -7px;
+}
+
+.crystal-selector .stand-neck {
+    width: 115px;
+    height: 30px;
+    margin: 0 auto;
+
+    background: linear-gradient(
+            90deg,
+            var(--clr-stand-edge),
+            var(--clr-stand-center),
+            var(--clr-stand-edge)
+    );
+
+    clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+}
+
+.crystal-selector .stand-foot {
+    height: 10px;
+    border: 1px solid var(--clr-stand-border);
+    border-radius: 5px;
+    background: var(--clr-stand-foot);
+}
+
+/* Single-/Multi-Schalter */
+.crystal-selector .selection-mode {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.crystal-selector .selection-mode button {
+    padding: 6px 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+
+    background: transparent;
+    box-shadow: none;
+    color: var(--clr-muted);
+
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.crystal-selector .selection-mode button[aria-pressed="true"] {
+    border-bottom-color: var(--clr-accent);
+    color: var(--clr-fg-light);
+}
+
+.crystal-selector .selection-mode button:focus-visible {
+    outline: 2px solid var(--clr-accent);
+    outline-offset: 4px;
+}
+
+/* Auswahlkarte */
+.crystal-selector .selection {
+    padding: 32px;
+    border: 1px solid var(--clr-border);
+    border-radius: 20px;
+
+    background: linear-gradient(
+            135deg,
+            var(--clr-surface-highlight),
+            var(--clr-surface)
+    );
+}
+
+.crystal-selector .eyebrow {
+    margin: 0 0 14px;
+    color: var(--clr-accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.crystal-selector .selection h2 {
+    margin: 0;
+    font-size: 26px;
+}
+
+.crystal-selector .selection-copy {
+    color: var(--clr-muted);
+    font-size: 14px;
+}
+
+/* Ausgewählte Künstler */
+.crystal-selector .selected-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    max-height: 320px;
+    overflow-y: auto;
+
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.crystal-selector .selected-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 15px 20px;
+    border-radius: 28px;
+
+    background: var(--clr-selected);
+    color: var(--clr-bg-dark);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.crystal-selector .selected-item:hover {
+    background: var(--clr-selected);
+}
+
+.crystal-selector .selected-item span {
+    min-width: 0;
+}
+
+/* Aus Merkliste entfernen */
+.crystal-selector .remove-selection {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+    color: var(--clr-bg-dark);
+
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.crystal-selector .remove-selection:hover {
+    background: var(--clr-remove-hover);
+}
+
+.crystal-selector .remove-selection:focus-visible {
+    outline: 2px solid var(--clr-bg-dark);
+    outline-offset: 2px;
+}
+
+/* Kleinere Bildschirme */
+@media (max-width: 900px) {
+    .crystal-selector {
+        grid-template-columns: minmax(0, 440px);
+        gap: 32px;
+    }
+}
