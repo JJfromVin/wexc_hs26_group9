@@ -13,38 +13,56 @@ export const CrystalSiteProjector = siteController => {
         header.querySelector("h1").textContent = "Crystal ball";
 
         const [crystalSection] = dom(`
-            <section class="crystal-selector" aria-label="Künstlerauswahl">
-                <div class="orb-area">
-                    <div class="orb">
-                        <ul class="item-ring">
-                            <li class="placeholder">
-                                Hier erscheinen bald eure Künstler.
-                            </li>
-                        </ul>
-                    </div>
+    <section class="crystal-selector" aria-label="Künstlerauswahl">
 
-                    <div class="stand" aria-hidden="true">
-                        <div class="stand-neck"></div>
-                        <div class="stand-foot"></div>
-                    </div>
-                </div>
+        <div class="orb-area">
+            <div class="orb">
+                <ul class="item-ring">
+                    <li class="placeholder">
+                        Hier erscheinen bald eure Künstler.
+                    </li>
+                </ul>
+            </div>
 
-                <aside class="selection"
-                       aria-labelledby="crystal-selection-title">
-                    <p class="eyebrow">Deine Auswahl</p>
+            <div class="stand" aria-hidden="true">
+                <div class="stand-neck"></div>
+                <div class="stand-foot"></div>
+            </div>
 
-                    <h2 id="crystal-selection-title">
-                        Ein kleiner Fund
-                    </h2>
+            <div class="selection-mode"
+                 role="group"
+                 aria-label="Auswahlmodus">
+                <button type="button"
+                        data-mode="single"
+                        aria-pressed="true">
+                    Single
+                </button>
 
-                    <p class="selection-copy">
-                        Hier erscheinen deine ausgewählten Künstler.
-                    </p>
+                <button type="button"
+                        data-mode="multi"
+                        aria-pressed="false">
+                    Multi
+                </button>
+            </div>
+        </div>
 
-                    <ul class="selected-items"></ul>
-                </aside>
-            </section>
-        `);
+        <aside class="selection"
+               aria-labelledby="crystal-selection-title">
+            <p class="eyebrow">Deine Auswahl</p>
+
+            <h2 id="crystal-selection-title">
+                Ein kleiner Fund
+            </h2>
+
+            <p class="selection-copy">
+                Hier erscheinen deine ausgewählten Künstler.
+            </p>
+
+            <ul class="selected-items"></ul>
+        </aside>
+
+    </section>
+`);
 
         const ring = crystalSection.querySelector(".item-ring");
         const selectedItems = crystalSection.querySelector(".selected-items");
@@ -52,6 +70,9 @@ export const CrystalSiteProjector = siteController => {
 // Künstler nach ihrer ID speichern
         const artists = new Map();
         let selectedArtistId = null;
+        const selectedIds = new Set();
+        let selectionMode = "single";
+        const modeButtons = crystalSection.querySelectorAll("[data-mode]");
 
         const renderArtists = () => {
             ring.replaceChildren();
@@ -100,7 +121,7 @@ export const CrystalSiteProjector = siteController => {
                 button.type = "button";
                 button.textContent = artist.displayedAs;
 
-                const isSelected = artist.id === selectedArtistId;
+                const isSelected = selectedIds.has(artist.id);
                 button.setAttribute("aria-pressed", String(isSelected));
 
                 if (distance === 0) {
@@ -124,22 +145,97 @@ export const CrystalSiteProjector = siteController => {
                 ring.append(item);
             });
 
-            const selectedArtist = artists.get(selectedArtistId);
+            selectedIds.forEach(id => {
+                const artist = artists.get(id);
+                if (!artist) return;
 
-            if (selectedArtist) {
                 const item = document.createElement("li");
                 item.className = "selected-item";
-                item.textContent = `✧ ${selectedArtist.displayedAs}`;
+
+                const name = document.createElement("span");
+                name.textContent = `✧ ${artist.displayedAs}`;
+                item.append(name);
+
+                if (selectionMode === "multi") {
+                    const removeButton = document.createElement("button");
+                    removeButton.type = "button";
+                    removeButton.className = "remove-selection";
+                    removeButton.textContent = "×";
+                    removeButton.setAttribute(
+                        "aria-label",
+                        `${artist.displayedAs} aus Auswahl entfernen`
+                    );
+
+                    removeButton.onclick = () => {
+                        selectedIds.delete(id);
+                        renderArtists();
+
+                        // Nach dem Neuaufbau einen erreichbaren Fokus setzen.
+                        const nextButton = selectedItems.querySelector("button");
+                        const multiButton =
+                            crystalSection.querySelector('[data-mode="multi"]');
+
+                        (nextButton ?? multiButton).focus();
+                    };
+
+                    item.append(removeButton);
+                }
+
                 selectedItems.append(item);
-            }
+            });
         };
+
+        modeButtons.forEach(button => {
+            button.onclick = () => {
+                selectionMode = button.dataset.mode;
+
+                modeButtons.forEach(modeButton => {
+                    modeButton.setAttribute(
+                        "aria-pressed",
+                        String(modeButton.dataset.mode === selectionMode)
+                    );
+                });
+
+                if (selectionMode === "single") {
+                    // Den aktuell bearbeiteten Künstler behalten.
+                    // Falls keiner aktiv ist, den ersten aus der Merkliste nehmen.
+                    const keepId = artists.has(selectedArtistId)
+                        ? selectedArtistId
+                        : [...selectedIds][0];
+
+                    selectedIds.clear();
+
+                    if (keepId !== undefined && artists.has(keepId)) {
+                        selectedIds.add(keepId);
+                        selectedArtistId = keepId;
+
+                        siteController.setSelection({
+                            entityName: ARTIST,
+                            entity: artists.get(keepId)
+                        });
+                    }
+                }
+
+                renderArtists();
+            };
+        });
 
         siteController.onSelection(({entityName, entity}) => {
             if (entityName === ARTIST) {
                 artists.set(entity.id, entity);
                 selectedArtistId = entity.id;
+
+                if (selectionMode === "single") {
+                    selectedIds.clear();
+                }
+
+                selectedIds.add(entity.id);
             } else {
                 selectedArtistId = null;
+
+                if (selectionMode === "single") {
+                    selectedIds.clear();
+                }
             }
 
             renderArtists();
@@ -161,6 +257,7 @@ export const CrystalSiteProjector = siteController => {
             if (entityName !== ARTIST) return;
 
             artists.delete(entity.id);
+            selectedIds.delete(entity.id);
 
             if (selectedArtistId === entity.id) {
                 selectedArtistId = null;
